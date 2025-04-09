@@ -1,0 +1,9 @@
+cd MLA-aC4C-main
+git init
+git remote add origin https://github.com/LIguanding17/MLA-ac4C.git
+git add .
+git commit -m "Initial commit"
+git push -u origin main
+
+git config user.name "LIguanding17"
+git config user.email "svplasmas@163.com"
