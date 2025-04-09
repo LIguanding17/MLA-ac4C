@@ -8,6 +8,8 @@ import pandas as pd
 import random
 
 st.title("""********* MLA-ac4C *********""")
+st.subheader(
+    """MLA-ac4C is a high-performance N4-Acetylcytidine site prediction model based on a combination of Multi-layer Attention, Bi-GRU, and DenseNet architectures.""")
 
 image = Image.open('model.png')
 st.image(image)
