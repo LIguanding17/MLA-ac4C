@@ -4,6 +4,8 @@ from functions import *
 from model.model import Model
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
+import pandas as pd
+import random
 
 st.title("""********* MLA-ac4C *********""")
 
@@ -16,11 +18,10 @@ def predict():
     if 'sequence' not in st.session_state:
         st.session_state.sequence = ""
 
-    # Sample RNA sequence
-    sample = "UGGUGUACUCCAGCAACUUCCAGAACGUGAAGCAGCUGUACGCGCUGGUGUGCGAAACGCAGCGCUACUCCGCCGUGCUGGAUGCUGUGAUCGCCAGCGCCGGCCUCCUCCGUGCGGAGAAGAAGCUGCGGCCGCACCUGGCCAAGGUGCUAGUGUAUGAGUUGUUGUUGGGAAAGGGCUUUCGAGGGGGUGGGGGCCGAU"
-
     # Button to automatically populate the text area with the sample sequence
     if st.button('Sample Sequence'):
+        df = pd.read_csv('dataset/train_data.csv')
+        sample = random.choice(df['Sequence'])
         st.session_state.sequence = sample  # Assign sample sequence to session state
 
     # Text area for sequence input (with the option to be filled by the sample sequence)
