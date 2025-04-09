@@ -1,11 +1,9 @@
-import torch
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-from model import Model
+from model.model import Model
 from functions import *
 
-file_path = './data/test_data.csv'
+file_path = 'dataset/test_data.csv'
 features, labels = process_csv_and_encode(file_path)
 
 dataset = TensorDataset(features, labels)
@@ -15,7 +13,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'device={device}')
 model = Model().to(device)
 
-model.load_state_dict(torch.load(f'./model/model.pth'))
+model.load_state_dict(torch.load(f'./model/model.pth', map_location=device))
 model.eval()
 
 fold_performance = []

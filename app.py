@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from functions import *
-from model import Model
+from model.model import Model
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
@@ -34,9 +34,9 @@ def predict():
             "Sequence": [sequence],
             "Label": [0]
         })
-        df.to_csv("./data/input.csv", index=False)
+        df.to_csv("./dataset/input.csv", index=False)
 
-        file_path = './data/input.csv'  # 输入的CSV文件
+        file_path = 'dataset/input.csv'  # 输入的CSV文件
         features, labels = process_csv_and_encode(file_path)
 
         dataset = TensorDataset(features, labels)
