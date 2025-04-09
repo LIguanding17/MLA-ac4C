@@ -39,7 +39,7 @@ def predict():
         })
         df.to_csv("./dataset/input.csv", index=False)
 
-        file_path = 'dataset/input.csv'  # 输入的CSV文件
+        file_path = 'dataset/input.csv'
         features, labels = process_csv_and_encode(file_path)
 
         dataset = TensorDataset(features, labels)

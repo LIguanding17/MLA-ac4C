@@ -14,26 +14,26 @@ class ResidualBlock(nn.Module):
         self.dropout2 = nn.Dropout(0.2)
         self.dropout3 = nn.Dropout(0.2)
 
-        self.residual_connection1 = nn.Conv1d(in_channels, out_channels, kernel_size=1)  # 用于调整通道
-        self.residual_connection2 = nn.Conv1d(out_channels, out_channels, kernel_size=7, padding=3)  # 用于调整通道
+        self.residual_connection1 = nn.Conv1d(in_channels, out_channels, kernel_size=1)
+        self.residual_connection2 = nn.Conv1d(out_channels, out_channels, kernel_size=7, padding=3)
 
     def forward(self, x):
-        residual = self.residual_connection1(x)  # 残差连接
+        residual = self.residual_connection1(x)
         out = self.conv1(x)
         out = self.bn1(out)
-        out += residual  # 残差加上卷积输出
+        out += residual
         out = self.dropout1(self.relu(out))
         residual = residual + self.residual_connection2(out)
 
         out = self.conv2(out)
         out = self.bn1(out)
-        out += residual  # 残差加上卷积输出
+        out += residual
         out = self.dropout2(self.relu(out))
         residual = residual + self.residual_connection2(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out += residual  # 残差加上卷积输出
+        out += residual
         out = self.dropout3(self.relu(out))
 
         return out
@@ -123,7 +123,6 @@ class Model(nn.Module):
         x2 = self.res_block2(x2)
         x2 = self.res_block3(x2)
 
-        # 将卷积输出转为 LSTM 所需的输入维度 [batch_size, sequence_length, features]
         x1 = x1.permute(0, 2, 1)
         x2 = x2.permute(0, 2, 1)
 
