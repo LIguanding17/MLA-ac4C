@@ -12,7 +12,7 @@ onehot_dict = {
     'C': [0, 1, 0, 0],
     'G': [0, 0, 1, 0],
     'U': [0, 0, 0, 1],
-    'X': [0, 0, 0, 0]  # 不确定碱基
+    'X': [0, 0, 0, 0]
 }
 
 eiip_dict = {
@@ -35,9 +35,9 @@ ncp_dict = {
 
 def get_positional_encoding(length, d_model):
     """
-    使用标准Transformer的位置编码（sin/cos）
-    length: 序列长度
-    d_model: 编码维度（必须和one-hot维度相同或统一）
+    using standard Transformer (sin/cos)
+    length: sequence length
+    d_model: encoding dimension (must be the same or uniform as one-hot dimension)
     """
     pos = np.arange(length)[:, np.newaxis]  # shape (length, 1)
     i = np.arange(d_model)[np.newaxis, :]  # shape (1, d_model)
@@ -59,19 +59,17 @@ def get_pseknc_vector(sequence, k=3):
     bases = ['A', 'C', 'G', 'U']
     all_kmers = [''.join(p) for p in product(bases, repeat=k)]
 
-    sequence = ''.join([b if b in bases else 'N' for b in sequence])  # 清理非法字符
-
     kmers = get_kmers(sequence, k)
     kmer_counts = Counter(kmers)
 
-    # 归一化频率向量
+    # Normalized frequency vector
     total = sum(kmer_counts.values())
     freq_vector = [kmer_counts[kmer] / total if total > 0 else 0 for kmer in all_kmers]
 
     return np.array(freq_vector)
 
 
-# DNA序列进行各类编码并拼接
+# All kinds of encoding and splicing of RNA sequences
 def encode_sequence(seq):
     # One-Hot encoding
     onehot_encoded = np.array([onehot_dict[nuc] for nuc in seq]).reshape(-1)
@@ -93,27 +91,24 @@ def encode_sequence(seq):
     return combined_vector.tolist()
 
 
-# 读取CSV文件并对每个序列进行编码
+# Read CSV files and encode each sequence
 def process_csv_and_encode(file_path):
     df = pd.read_csv(file_path)
 
     sequence_length = len(df.iloc[0]['Sequence'])
-    mid_position = sequence_length // 2  # 中间位置
+    mid_position = sequence_length // 2
 
     def replace_middle(seq):
-        return seq[mid_position - 100:mid_position + 100 + 1]
+        return seq[max(0, mid_position - 100):min(mid_position + 101, sequence_length)]
 
     sequences = df['Sequence'].apply(replace_middle)
     labels = df['Label']
 
-    # 对每个序列进行编码
     encoded_data = [encode_sequence(seq) for seq in sequences]
 
-    # 将结果转换为一个 numpy ndarray
-    encoded_data = np.array(encoded_data)  # 合并为单一的 numpy.ndarray
-    labels = np.array(labels)  # 合并为单一的 numpy.ndarray
+    encoded_data = np.array(encoded_data)
+    labels = np.array(labels)
 
-    # 将 numpy ndarray 转换为 PyTorch tensor
     encoded_data = torch.tensor(encoded_data)
     labels = torch.tensor(labels)
     return encoded_data, labels
@@ -121,20 +116,19 @@ def process_csv_and_encode(file_path):
 
 def calculate_metrics(y_true, y_pred_prob):
     """
-    计算并返回各种分类指标
-    :param y_true: 实际标签 (二值标签)
-    :param y_pred_prob: 预测概率 (连续概率)
-    :return: 各种分类指标的字典
+    Calculate and return various classification indicators
+    y_true: Actual label (binary label)
+    y_pred_prob: Predicted probability (continuous probability)
+    return: Dictionary of various classification indicators
     """
     y_true_flat = y_true.ravel()
-    y_pred_flat = (y_pred_prob.ravel() > 0.5).astype(int)  # 使用阈值0.5进行二值化
+    y_pred_flat = (y_pred_prob.ravel() > 0.5).astype(int)
     TP = np.sum((y_true_flat == 1) & (y_pred_flat >= 0.5), dtype=np.float64)
     TN = np.sum((y_true_flat == 0) & (y_pred_flat < 0.5), dtype=np.float64)
     FP = np.sum((y_true_flat == 0) & (y_pred_flat >= 0.5), dtype=np.float64)
     FN = np.sum((y_true_flat == 1) & (y_pred_flat < 0.5), dtype=np.float64)
     print(f"TP:{TP}, TN:{TN}, FP:{FP}, FN:{FN}")
 
-    # 计算各项指标
     acc = accuracy_score(y_true_flat, y_pred_flat)
     precision = precision_score(y_true_flat, y_pred_flat, average='binary', zero_division=1)
     recall = recall_score(y_true_flat, y_pred_flat, average='binary')
@@ -142,14 +136,13 @@ def calculate_metrics(y_true, y_pred_prob):
     mcc = matthews_corrcoef(y_true_flat, y_pred_flat)
     sn = recall
     sp = TN / (FP + TN)
-    # AUC和PRC可能会遇到只有一个类的情况
     try:
-        auc_value = roc_auc_score(y_true_flat, y_pred_prob.ravel())  # AUC 使用概率值
+        auc_value = roc_auc_score(y_true_flat, y_pred_prob.ravel())
     except ValueError as e:
         auc_value = 'Undefined (only one class present)'
 
     try:
-        prc = average_precision_score(y_true_flat, y_pred_prob.ravel())  # PRC 使用概率值
+        prc = average_precision_score(y_true_flat, y_pred_prob.ravel())
     except ValueError as e:
         prc = 'Undefined (only one class present)'
 

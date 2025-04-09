@@ -5,13 +5,12 @@ import matplotlib.pyplot as plt
 from model import Model
 from functions import *
 
-file_path = './data/test_data.csv'  # 输入的CSV文件
+file_path = './data/test_data.csv'
 features, labels = process_csv_and_encode(file_path)
 
 dataset = TensorDataset(features, labels)
 val_loader = DataLoader(dataset, batch_size=256, shuffle=False)
 
-# 实例化模型、定义损失函数和优化器
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'device={device}')
 model = Model().to(device)
@@ -31,14 +30,12 @@ with torch.no_grad():
         all_val_labels.append(batch_labels.cpu().detach().numpy())
         all_outputs.append(outputs.cpu().detach().numpy())
 
-# 将所有batch的结果合并
+# Merge the results of all batches
 all_val_labels = np.concatenate(all_val_labels, axis=0)
 all_outputs = np.concatenate(all_outputs, axis=0)
 
+# Evaluate model performance
 metrics = calculate_metrics(all_val_labels, all_outputs)
 fold_performance.append(metrics)
-
-# 打印当前 fold 的性能
 print(
     f'Performance: SN: {metrics["SN"]}, SP: {metrics["SP"]}, Accuracy: {metrics["Accuracy"]}, MCC: {metrics["MCC"]}, AUC: {metrics["AUC"]}')
-print()
